@@ -1,11 +1,13 @@
 #pragma once 
 
 #include <alfalogCommon.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 class AlfaBackend {
     public:
     virtual ~AlfaBackend() {};
-    virtual void log(alog_level_t level, const std::string& msg) = 0;
+    virtual void log(alog_level_t level, const std::string& prefix, const std::string& msg) = 0;
     virtual void begin() = 0;
 
     alog_level_t _level = LOG_DISABLED;
@@ -47,11 +49,11 @@ void begin() {
     _started = true;
 }
 
-void log(alog_level_t level, const std::string& msg) {
+void log(alog_level_t level, const std::string& prefix, const std::string& msg) {
     if (!_started) { return; }
     if (level < _level) { return; }
 
-    logs.insert(logs.begin(), msg);
+    logs.insert(logs.begin(), prefix + msg);
     if (logs.size() > line_count) {
         logs.pop_back();
     }
@@ -82,9 +84,9 @@ void begin() {
     _started = true;
 }
 
-void log(alog_level_t level, const std::string& msg) {
+void log(alog_level_t level, const std::string& prefix, const std::string& msg) {
     if (level < _level) { return; }
-    _ser_handle(msg.c_str());
+    _ser_handle((prefix + " " + msg).c_str());
 }
 
 private:

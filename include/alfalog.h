@@ -3,8 +3,6 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 #include <vector>
 
 #undef B1 //this is very critical - fmtlib has an conflict with esp32 arduino framework
@@ -51,7 +49,7 @@ class AlfaLogger_ {
 
     void log(alog_level_t level, const std::string& msg) {
         for (auto& backend : _backends) {
-            backend->log(level, getPrefix(level) + msg);
+            backend->log(level, getPrefix(level), msg);
         }
     }
 
