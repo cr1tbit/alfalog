@@ -32,24 +32,10 @@ class AlfaLogger_ {
         }
     }
 
-    const std::string getPrefix(alog_level_t level) {
-        switch (level) {
-            case LOG_DEBUG:
-                return std::string("D:");
-            case LOG_INFO:
-                return std::string("I:");
-            case LOG_WARN:
-                return std::string("W:");
-            case LOG_ERROR:
-                return std::string("E:");
-            default:
-                return std::string("??");
-        }
-    }
 
     void log(alog_level_t level, const std::string& msg) {
         for (auto& backend : _backends) {
-            backend->log(level, getPrefix(level), msg);
+            backend->log(level, msg);
         }
     }
 

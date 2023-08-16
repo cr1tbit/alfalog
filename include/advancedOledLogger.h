@@ -119,11 +119,11 @@ void redraw(){
     display.display();
 }
 
-void log(alog_level_t level, const std::string& prefix, const std::string& msg) {
+void log(alog_level_t level, const std::string& msg) {
     if (!_started) { return; }
     if (level < _level) { return; }
     
-    auto words = split_string((prefix + " " + msg), log_line_length);
+    auto words = split_string((getDefaultPrefix(level) + " " + msg), log_line_length);
 
     std::string line;
 

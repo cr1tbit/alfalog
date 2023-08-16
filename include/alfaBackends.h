@@ -4,13 +4,60 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
+const std::string red("\033[0;31m");
+const std::string green("\033[1;32m");
+const std::string yellow("\033[1;33m");
+const std::string cyan("\033[0;36m");
+const std::string magenta("\033[0;35m");
+const std::string reset("\033[0m");
+
+#define ALOG_FANCY true
+
 class AlfaBackend {
     public:
     virtual ~AlfaBackend() {};
-    virtual void log(alog_level_t level, const std::string& prefix, const std::string& msg) = 0;
+    virtual void log(alog_level_t level, const std::string& msg) = 0;
     virtual void begin() = 0;
 
     alog_level_t _level = LOG_DISABLED;
+
+    const std::string getDefaultPrefix(alog_level_t level) {
+        switch (level) {
+            case LOG_TRACE:
+                return std::string("T:");
+            case LOG_DEBUG:
+                return std::string("D:");
+            case LOG_INFO:
+                return std::string("I:");
+            case LOG_WARN:
+                return std::string("W:");
+            case LOG_ERROR:
+                return std::string("E:");
+            case LOG_VIP:
+                return std::string("V:");
+            default:
+                return std::string("??");
+        }
+    }
+
+    const std::string getFancyPrefix(alog_level_t level) {
+        switch (level) {
+            case LOG_TRACE:
+                return std::string(cyan + "TRC:" + reset);
+            case LOG_DEBUG:
+                return std::string(green + "DBG:" + reset);
+            case LOG_INFO:
+                return std::string(magenta + "INF:" + reset);
+            case LOG_WARN:
+                return std::string(yellow + "WRN:" + reset);
+            case LOG_ERROR:
+                return std::string(red + "ERR:" + reset);
+            case LOG_VIP:
+                return std::string(cyan + "VIP:" + reset);
+            default:
+                return std::string("???:");
+        }
+    }
 
     protected:
         bool _started = false;
@@ -49,11 +96,11 @@ void begin() {
     _started = true;
 }
 
-void log(alog_level_t level, const std::string& prefix, const std::string& msg) {
+void log(alog_level_t level, const std::string& msg) {
     if (!_started) { return; }
     if (level < _level) { return; }
 
-    logs.insert(logs.begin(), prefix + msg);
+    logs.insert(logs.begin(),getDefaultPrefix(level) + msg);
     if (logs.size() > line_count) {
         logs.pop_back();
     }
@@ -76,19 +123,25 @@ private:
 class SerialLogger : public AlfaBackend {
 public:
 
-SerialLogger(std::function<void(const char*)> alogPrintHandle, alog_level_t target_level){
+SerialLogger(std::function<void(const char*)> alogPrintHandle, alog_level_t target_level, bool isFancy = false){
     this->_ser_handle = alogPrintHandle;
     _level = target_level;
+    _fancy = isFancy;
 }
 void begin() {
     _started = true;
 }
 
-void log(alog_level_t level, const std::string& prefix, const std::string& msg) {
+void log(alog_level_t level, const std::string& msg) {
     if (level < _level) { return; }
-    _ser_handle((prefix + " " + msg).c_str());
+    if (_fancy) {
+        _ser_handle((getFancyPrefix(level) + " " + msg).c_str());
+    } else {
+        _ser_handle((getDefaultPrefix(level) + " " + msg).c_str());
+    }
 }
 
 private:
     std::function<void(const char*)> _ser_handle;
+    bool _fancy;
 };
