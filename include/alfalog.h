@@ -1,11 +1,12 @@
 #pragma once
 
 #include <Arduino.h>
+#undef B1 //this is very critical - fmtlib has an conflict with esp32 arduino framework
+
 #include <Wire.h>
 
 #include <vector>
 
-#undef B1 //this is very critical - fmtlib has an conflict with esp32 arduino framework
 #include <fmt/core.h>
 
 #include <alfalogCommon.h>
@@ -16,7 +17,7 @@ class AlfaLogger_ {
     public:
     AlfaLogger_() = default;
 
-    static AlfaLogger_ &getInstance(){
+    static AlfaLogger_ &getInstance() {
         static AlfaLogger_ instance;
         return instance;
     }
@@ -43,5 +44,4 @@ class AlfaLogger_ {
         std::vector<AlfaBackend*> _backends;
 };
 
-AlfaLogger_ &AlfaLogger = AlfaLogger.getInstance();
-
+extern AlfaLogger_ &AlfaLogger;
