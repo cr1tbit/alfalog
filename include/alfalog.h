@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <fmt/core.h>
+#include <fmt/printf.h>
 
 #include <alfalogCommon.h>
 #include <alfaBackends.h>
@@ -48,10 +49,33 @@ class AlfaLogger_ {
         }
     }
 
-
-    void log(alog_level_t level, const std::string& msg) {
+    void log(alog_level_t level, 
+        const char* file, int line, 
+        const std::string& msg
+    ) {
         for (auto& backend : _backends) {
-            backend->log(level, msg);
+            backend->log(level, file, line, msg);
+        }
+    }
+
+    // https://stackoverflow.com/questions/29242/off-the-shelf-c-hex-dump-code
+    // thanks @epatel, that's like 3rd time I'm using this snippet :)
+    void hexdump(const void *ptr, int buflen) {
+        unsigned char *buf = (unsigned char *)ptr;
+        int i, j;
+
+        for (i = 0; i < buflen; i += 16) {
+            std::string _hexline = fmt::sprintf("%06x: ", i);
+            for (j = 0; j < 16; j++)
+                if (i + j < buflen)
+                    _hexline += fmt::sprintf("%02x ", buf[i + j]);
+                else
+                    _hexline += fmt::sprintf("   ");
+            _hexline += fmt::sprintf(" ");
+            for (j = 0; j < 16; j++)
+                if (i + j < buflen)
+                    _hexline += fmt::sprintf("%c", isprint(buf[i + j]) ? buf[i + j] : '.');
+            log(LOG_RAW, "", 0, _hexline);
         }
     }
 

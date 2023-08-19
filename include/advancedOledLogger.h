@@ -119,22 +119,28 @@ void redraw(){
     display.display();
 }
 
-void log(alog_level_t level, const std::string& msg) {
+void log(alog_level_t level, 
+    const char* file, int line, 
+    const std::string& msg) {
+
+    (void) file;
+    (void) line;
+
     if (!_started) { return; }
     if (level < _level) { return; }
     
     auto words = split_string((getDefaultPrefix(level) + " " + msg), log_line_length);
 
-    std::string line;
+    std::string logLine;
 
     for (auto& word : words) {
-        if (line.length() + word.length() > log_line_length) {
-            insert_log_line(line);
-            line.clear();
+        if (logLine.length() + word.length() > log_line_length) {
+            insert_log_line(logLine);
+            logLine.clear();
         }
-        line += word + " ";
+        logLine += word + " ";
     }
-    insert_log_line(line);
+    insert_log_line(logLine);
     redraw();
 }
 

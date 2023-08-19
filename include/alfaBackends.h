@@ -16,7 +16,9 @@ const std::string reset("\033[0m");
 class AlfaBackend {
     public:
     virtual ~AlfaBackend() {};
-    virtual void log(alog_level_t level, const std::string& msg) = 0;
+    virtual void log(alog_level_t level, 
+        const char* file, int line, 
+        const std::string& msg) = 0;
     virtual void begin() = 0;
 
     alog_level_t _level = LOG_DISABLED;
@@ -35,6 +37,8 @@ class AlfaBackend {
                 return std::string("E:");
             case LOG_VIP:
                 return std::string("V:");
+            case LOG_RAW:
+                return std::string("");
             default:
                 return std::string("??");
         }
@@ -54,6 +58,8 @@ class AlfaBackend {
                 return std::string(red + "ERR:" + reset);
             case LOG_VIP:
                 return std::string(cyan + "VIP:" + reset);
+            case LOG_RAW:
+                return std::string("");
             default:
                 return std::string("???:");
         }
@@ -96,7 +102,13 @@ void begin() {
     _started = true;
 }
 
-void log(alog_level_t level, const std::string& msg) {
+void log(alog_level_t level, 
+        const char* file, int line, 
+        const std::string& msg) {
+
+    (void) file;
+    (void) line;
+    
     if (!_started) { return; }
     if (level < _level) { return; }
 
@@ -132,16 +144,33 @@ void begin() {
     _started = true;
 }
 
-void log(alog_level_t level, const std::string& msg) {
+void log(alog_level_t level, 
+    const char* file, int line, 
+    const std::string& msg) {
+
+    (void) file;
+    (void) line;
+
     if (level < _level) { return; }
-    if (_fancy) {
-        _ser_handle((getFancyPrefix(level) + " " + msg).c_str());
-    } else {
-        _ser_handle((getDefaultPrefix(level) + " " + msg).c_str());
+
+    std::string fileLine = "";
+
+    if ((_file_line) && (line != 0)) {
+        fileLine += fmt::format("{}:{} ",file, line);
     }
+
+    std::string logString = fmt::format(
+        "{} {}{}",
+        _fancy ? getFancyPrefix(level) : getDefaultPrefix(level),
+        fileLine,
+        msg
+    );
+    _ser_handle(logString.c_str());
+
 }
 
 private:
     std::function<void(const char*)> _ser_handle;
     bool _fancy;
+    bool _file_line = true;
 };
