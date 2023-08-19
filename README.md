@@ -65,21 +65,23 @@ void setup(){
 
 ## Writing custom backend
 
-User can easily create their own target for logging (like a display, network socket, etc.)
+User can easily create their own target for logging (like a display, speaker screaming the logs, etc.)
 
-All that's needed is to inherit from `AlfaBackend` class, overriding 2 methods.
+All that's needed is to inherit from `AlfaBackend` class, overriding the construnctor and 2 methods:
 
 ``` c++
-virtual void log(alog_level_t level, 
+MyLogger(alog_level_t target_level, anything_else_t something);
+
+void log(alog_level_t level, 
   const char* file, int line, 
   const std::string& msg);
 
-virtual void begin();
+void begin();
 ```
 
 ## Example usage
 
-An example for OLED logger can be seen in `advancedOledLogger.h` file.
+An example for custom logger can be seen in `advancedOledLogger.h` file.
 
 ![OLED photo](assets/advancedOledLogger.jpg) 
 
