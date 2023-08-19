@@ -1,8 +1,8 @@
 {
     "name": "Alfalog",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "description": "Actually Legitimate Formatted Arduino Logging library",
-    "keywords": "log, logging, logger, formatted",
+    "keywords": "log, logging, logger, formatted, hexdump",
     "license": "MIT",
     "dependencies": {
         "fmtlib/fmt": "^8.1.1",
