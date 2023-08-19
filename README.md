@@ -5,9 +5,11 @@ For too long have I struggled with no legit arduino logging library.
 
 ## Features
 
-* Log levels
+* Log levels (with colors!)
+* Hexdumping
 * Formatted printing
 * Adding several backends, with configurable verbosity
+* Example of an advanced OLED backend, combining logging and other info
 
 
 This library has been written with ESP32 family in mind, where ram is not that big of an issue. I'd not use it with low-end targets.
@@ -26,6 +28,19 @@ void uartPrintAlogHandle(const char* str){
 }
 ```
 
+This also allows the user to log with more exotic targets:
+
+``` c++
+AsyncWebServer server(80);
+AsyncEventSource events("/events");
+
+server.addHandler(&events);
+
+void socketAlogHandle(const char* str){
+    events.send(str,"log",millis());
+}
+```
+
 ## Writing custom backend
 
 User can easily create their own target for logging (like a display, network socket, etc.)
@@ -33,11 +48,14 @@ User can easily create their own target for logging (like a display, network soc
 All that's needed is to inherit from `AlfaBackend` class, overriding 2 methods.
 
 ``` c++
-virtual void log(alog_level_t level, const std::string& msg);
+virtual void log(alog_level_t level, 
+  const char* file, int line, 
+  const std::string& msg);
+
 virtual void begin();
 ```
 
-An example for OLED logger can be seen in `/alfaBackends.h` file.
+An example for OLED logger can be seen in `advancedOledLogger.h` file.
 
 ## #undef B1
 
