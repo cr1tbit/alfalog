@@ -5,9 +5,9 @@ For too long have I struggled with no legit arduino logging library.
 
 ## Features
 
+* Formatted print
 * Log levels (with colors!)
 * Hexdump
-* Formatted print
 * Adding several backends, with configurable verbosity
 * Example of an advanced OLED backend, combining logging and other info
 
