@@ -55,7 +55,16 @@ virtual void log(alog_level_t level,
 virtual void begin();
 ```
 
+## Example usage
+
 An example for OLED logger can be seen in `advancedOledLogger.h` file.
+
+![OLED photo](assets/advancedOledLogger.jpg) 
+
+On terminal:
+
+![OLED photo](assets/SerialLogger.jpg) 
+
 
 ## #undef B1
 
