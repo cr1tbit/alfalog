@@ -6,8 +6,8 @@ For too long have I struggled with no legit arduino logging library.
 ## Features
 
 * Log levels (with colors!)
-* Hexdumping
-* Formatted printing
+* Hexdump
+* Formatted print
 * Adding several backends, with configurable verbosity
 * Example of an advanced OLED backend, combining logging and other info
 
@@ -20,11 +20,26 @@ The fmtlib is used as a backend, which has not been written with embedded target
 
 See `/examples`
 
+To use this library in your platformio project, add this to `platformio.ini`
+
+```
+lib_deps =
+    [...]    
+	  https://github.com/cr1tbit/alfalog#v1.0.0
+```
+
 For the basic serial printing, user must supply their own print handle, which can be as easy as:
 
 ``` c++
 void uartPrintAlogHandle(const char* str){
   Serial.println(str);
+}
+
+SerialLogger serialLogger = SerialLogger(uartPrintAlogHandle, LOG_DEBUG, ALOG_FANCY);
+
+void setup(){
+  AlfaLogger.addBackend(&serialLogger);
+  AlfaLogger.begin();
 }
 ```
 
@@ -38,6 +53,13 @@ server.addHandler(&events);
 
 void socketAlogHandle(const char* str){
     events.send(str,"log",millis());
+}
+
+SerialLogger socketLogger = SerialLogger(socketAlogHandle, LOG_DEBUG);
+
+void setup(){
+  AlfaLogger.addBackend(&socketAlogHandle);
+  AlfaLogger.begin();
 }
 ```
 
