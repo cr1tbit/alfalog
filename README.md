@@ -70,9 +70,9 @@ User can easily create their own target for logging (like a display, speaker scr
 All that's needed is to inherit from `AlfaBackend` class, overriding the construnctor and 2 methods:
 
 ``` c++
-MyLogger(alog_level_t target_level, anything_else_t something);
+MyLogger(alogLevel_t targetLevel, anythingElse_t something);
 
-void log(alog_level_t level, 
+void log(alogLevel_t level, 
   const char* file, int line, 
   const std::string& msg);
 

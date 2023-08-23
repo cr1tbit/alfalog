@@ -49,7 +49,7 @@ class AlfaLogger_ {
         }
     }
 
-    void log(alog_level_t level, 
+    void log(alogLevel_t level, 
         const char* file, int line, 
         const std::string& msg
     ) {

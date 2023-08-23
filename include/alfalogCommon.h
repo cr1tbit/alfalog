@@ -6,7 +6,7 @@
 #define ALOGW(...) AlfaLogger.log(LOG_WARN,   __FILE__, __LINE__, fmt::format(__VA_ARGS__));
 #define ALOGE(...) AlfaLogger.log(LOG_ERROR,  __FILE__, __LINE__, fmt::format(__VA_ARGS__));
 #define ALOGV(...) AlfaLogger.log(LOG_VIP,    __FILE__, __LINE__, fmt::format(__VA_ARGS__));
-#define ALOGR(...) AlfaLogger.log(LOG_RAW,    __FILE__, __LINE__, fmt::format(__VA_ARGS__));
+#define ALOGR(...) AlfaLogger.log(LOG_RAW,    "",       "",       fmt::format(__VA_ARGS__));
 
 #define ALOGHD(ptr,len) AlfaLogger.hexdump(ptr,len);
 
@@ -19,4 +19,4 @@ typedef enum {
     LOG_VIP,
     LOG_RAW,
     LOG_DISABLED
-} alog_level_t;
+} alogLevel_t;

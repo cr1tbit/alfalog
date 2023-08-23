@@ -16,27 +16,27 @@ const std::string reset("\033[0m");
 class AlfaBackend {
     public:
     virtual ~AlfaBackend() {};
-    virtual void log(alog_level_t level, 
+    virtual void log(alogLevel_t level, 
         const char* file, int line, 
         const std::string& msg) = 0;
     virtual void begin() = 0;
 
-    alog_level_t _level = LOG_DISABLED;
+    alogLevel_t _level = LOG_DISABLED;
 
-    const std::string getDefaultPrefix(alog_level_t level) {
+    const std::string getDefaultPrefix(alogLevel_t level) {
         switch (level) {
             case LOG_TRACE:
-                return std::string("T:");
+                return std::string("T: ");
             case LOG_DEBUG:
-                return std::string("D:");
+                return std::string("D: ");
             case LOG_INFO:
-                return std::string("I:");
+                return std::string("I: ");
             case LOG_WARN:
-                return std::string("W:");
+                return std::string("W: ");
             case LOG_ERROR:
-                return std::string("E:");
+                return std::string("E: ");
             case LOG_VIP:
-                return std::string("V:");
+                return std::string("V: ");
             case LOG_RAW:
                 return std::string("");
             default:
@@ -44,24 +44,24 @@ class AlfaBackend {
         }
     }
 
-    const std::string getFancyPrefix(alog_level_t level) {
+    const std::string getFancyPrefix(alogLevel_t level) {
         switch (level) {
             case LOG_TRACE:
-                return std::string(cyan + "TRC:" + reset);
+                return std::string(cyan + "TRC: " + reset);
             case LOG_DEBUG:
-                return std::string(green + "DBG:" + reset);
+                return std::string(green + "DBG: " + reset);
             case LOG_INFO:
-                return std::string(magenta + "INF:" + reset);
+                return std::string(magenta + "INF: " + reset);
             case LOG_WARN:
-                return std::string(yellow + "WRN:" + reset);
+                return std::string(yellow + "WRN: " + reset);
             case LOG_ERROR:
-                return std::string(red + "ERR:" + reset);
+                return std::string(red + "ERR: " + reset);
             case LOG_VIP:
-                return std::string(cyan + "VIP:" + reset);
+                return std::string(cyan + "VIP: " + reset);
             case LOG_RAW:
                 return std::string("");
             default:
-                return std::string("???:");
+                return std::string("???: ");
         }
     }
 
@@ -72,27 +72,27 @@ class AlfaBackend {
 typedef enum {
     OLED_128x64,
     OLED_128x32
-} oled_type_t;
+} oledType_t;
 
 typedef enum {
     OLED_NORMAL = 0,
     OLED_UPSIDE_DOWN = 2,
-} oled_rot_t;
+} oledRot_t;
 
 class OledLogger : public AlfaBackend {
 public:
-OledLogger(TwoWire& i2c, alog_level_t target_level,
-    oled_type_t oled_type = OLED_128x64,
-    oled_rot_t oled_rot = OLED_NORMAL
+OledLogger(TwoWire& i2c, alogLevel_t targetLevel,
+    oledType_t oledType = OLED_128x64,
+    oledRot_t oledRot = OLED_NORMAL
 ){
-    if (oled_type == OLED_128x64) {
+    if (oledType == OLED_128x64) {
         display = Adafruit_SSD1306(128, 64, &i2c);
-        line_count = 8;
+        lineCount = 8;
     } else {
         display = Adafruit_SSD1306(128, 32, &i2c);
-        line_count = 4;
+        lineCount = 4;
     }
-    _level = target_level;
+    _level = targetLevel;
 }
 
 void begin() {
@@ -109,7 +109,7 @@ void begin() {
     _started = true;
 }
 
-void log(alog_level_t level, 
+void log(alogLevel_t level, 
         const char* file, int line, 
         const std::string& msg) {
 
@@ -120,7 +120,7 @@ void log(alog_level_t level,
     if (level < _level) { return; }
 
     logs.insert(logs.begin(),getDefaultPrefix(level) + msg);
-    if (logs.size() > line_count) {
+    if (logs.size() > lineCount) {
         logs.pop_back();
     }
 
@@ -135,23 +135,23 @@ void log(alog_level_t level,
 private:
     Adafruit_SSD1306 display;
     std::vector<std::string> logs;
-    int line_count;
+    int lineCount;
 };
 
 
 class SerialLogger : public AlfaBackend {
 public:
 
-SerialLogger(std::function<void(const char*)> alogPrintHandle, alog_level_t target_level, bool isFancy = false){
+SerialLogger(std::function<void(const char*)> alogPrintHandle, alogLevel_t targetLevel, bool isFancy = false){
     this->_ser_handle = alogPrintHandle;
-    _level = target_level;
+    _level = targetLevel;
     _fancy = isFancy;
 }
 void begin() {
     _started = true;
 }
 
-void log(alog_level_t level, 
+void log(alogLevel_t level, 
     const char* file, int line, 
     const std::string& msg) {
 
@@ -162,22 +162,21 @@ void log(alog_level_t level,
 
     std::string fileLine = "";
 
-    if ((_file_line) && (line != 0)) {
+    if ((_printFileLine) && (line != 0)) {
         fileLine += fmt::format("{}:{} ",file, line);
     }
 
     std::string logString = fmt::format(
-        "{} {}{}",
+        "{}{}{}",
         _fancy ? getFancyPrefix(level) : getDefaultPrefix(level),
         fileLine,
         msg
     );
     _ser_handle(logString.c_str());
-
 }
 
 private:
     std::function<void(const char*)> _ser_handle;
     bool _fancy;
-    bool _file_line = true;
+    bool _printFileLine = true;
 };

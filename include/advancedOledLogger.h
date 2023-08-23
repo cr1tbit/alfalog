@@ -21,10 +21,12 @@
  * 
  */
 
-static std::vector<std::string> split_string(const std::string& input_string, int maxlen) {
+// Split lines nicely when log is longer than the display
+static std::vector<std::string> splitString(const std::string& input_string, int maxlen) {
     std::vector<std::string> words;
     std::string word;
 
+    // iterate over chars
     for (const auto& c : input_string) {
         if (std::isspace(c)) {
             if (!word.empty()) {
@@ -39,41 +41,39 @@ static std::vector<std::string> split_string(const std::string& input_string, in
             }
         }
     }
-
     if (!word.empty()) {
         words.push_back(word);
     }
-
     return words;
 }
 
 typedef enum {
     BAR_WIFI_IP,
     BAR_CUSTOM,
-} top_bar_mode_t;
+} topBarMode_t;
 
 class AdvancedOledLogger : public AlfaBackend {
 public:
 
 AdvancedOledLogger(
-    TwoWire& i2c, alog_level_t target_level, 
-    oled_type_t oled_type = OLED_128x64,
-    oled_rot_t oled_rot = OLED_NORMAL
+    TwoWire& i2c, alogLevel_t targetLevel, 
+    oledType_t oledType = OLED_128x64,
+    oledRot_t oledRot = OLED_NORMAL
 ){
-    if (oled_type == OLED_128x64) {
+    if (oledType == OLED_128x64) {
         display = Adafruit_SSD1306(128, 64, &i2c);
-        line_count = 8;
+        lineCount = 9;
     } else {
         display = Adafruit_SSD1306(128, 32, &i2c);
-        line_count = 4;
+        lineCount = 4;
     }
-    _level = target_level;
-    this->oled_rot = oled_rot;
+    _level = targetLevel;
+    this->oledRot = oledRot;
 }
 
 void begin() {
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-    display.setRotation(oled_rot);
+    display.setRotation(oledRot);
 
     display.setTextSize(1);
     display.setFont(&Picopixel);
@@ -82,33 +82,35 @@ void begin() {
     _started = true;
 }
 
-void insert_log_line(std::string& line){
+void insertLogLine(std::string& line){
     lines.push_back(line);
-    if (lines.size() > line_count) {
+    if (lines.size() > lineCount) {
         lines.erase(lines.begin());
     }
 }
 
-void render_top_bar(){
+void renderTopBar(){
     display.fillRect(0, 0, 128, 7, SSD1306_WHITE);
     display.setCursor(1, 5);
     display.setTextColor(SSD1306_BLACK);
 
-    if (bar_mode == BAR_WIFI_IP) {
-        std::string text = fmt::format(
-            "{} {:>16}",
-            staticTopBarText.c_str(),
+    display.print(staticTopBarText.c_str());
+
+    if (barMode == BAR_WIFI_IP) {
+        std::string ipText(
             (WiFi.status() == WL_CONNECTED)?
-                WiFi.localIP().toString().c_str():
-                "[No internet]"
+            WiFi.localIP().toString().c_str():
+            "[No internet]"
         );
-        display.print(text.c_str());
-    } else if (bar_mode == BAR_CUSTOM) {
-        display.print(staticTopBarText.c_str());
-    }    
+        int16_t x,y; uint16_t dx,dy;
+        display.getTextBounds(ipText.c_str(), 0, 0, &x, &y, &dx, &dy);
+        int16_t cursorOffs = display.width() - dx - 1;
+        display.setCursor(cursorOffs, 5);
+        display.print(ipText.c_str());
+    }
 }
 
-void render_logs(){
+void renderLogs(){
     int start_y = 13;
     display.setTextColor(SSD1306_WHITE);
     for (auto& line : lines) {
@@ -118,22 +120,45 @@ void render_logs(){
     }
 }
 
-void render_status_icon(){
-    // display.drawBitmap(80, 10, test, 16, 13, 1);
+void renderStatusIcon(){
+    display.setTextColor(SSD1306_WHITE);
+    static int counter = 0;
+    char chars[] = {'|', '/', '-', '\\'};
+    display.setCursor(
+        display.width()-5,
+        display.height()-5 
+    );
+    display.print(chars[counter%4]);
+    counter++;
+    
+    /* I drew random pixels and this looks like 
+       a croissant, it's pretty funny.
+    uint8_t test[] = {
+        0b00011100,
+        0b01100110,
+        0b10000000,
+        0b11000000,
+        0b11100000,
+        0b11000011,
+        0b11110110,
+        0b00011000,
+    };
+    display.drawBitmap(119, 55, test, 8, 8, 1);
+    */
 }
 
 void redraw(){
     if (!_started) { return; }
     display.clearDisplay();
     
-    render_logs();
-    render_top_bar();
-    render_status_icon();
+    renderLogs();
+    renderTopBar();
+    renderStatusIcon();
 
     display.display();
 }
 
-void log(alog_level_t level, 
+void log(alogLevel_t level, 
     const char* file, int line, 
     const std::string& msg) {
 
@@ -143,23 +168,24 @@ void log(alog_level_t level,
     if (!_started) { return; }
     if (level < _level) { return; }
     
-    auto words = split_string((getDefaultPrefix(level) + " " + msg), log_line_length);
+    auto words = splitString((getDefaultPrefix(level) + " " + msg), log_line_length);
 
     std::string logLine;
 
     for (auto& word : words) {
         if (logLine.length() + word.length() > log_line_length) {
-            insert_log_line(logLine);
+            insertLogLine(logLine);
             logLine.clear();
         }
         logLine += word + " ";
     }
-    insert_log_line(logLine);
+
+    insertLogLine(logLine);
     redraw();
 }
 
-void setTopBarText(top_bar_mode_t mode, const std::string& text){
-    bar_mode = mode;
+void setTopBarText(topBarMode_t mode, const std::string& text){
+    barMode = mode;
     staticTopBarText = text;
     redraw();
 }
@@ -174,7 +200,7 @@ private:
     std::vector<std::string> lines;
     std::string staticTopBarText;
 
-    int line_count;
-    oled_rot_t oled_rot;
-    top_bar_mode_t bar_mode;
+    int lineCount;
+    oledRot_t oledRot;
+    topBarMode_t barMode;
 };
