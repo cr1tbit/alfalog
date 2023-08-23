@@ -74,10 +74,17 @@ typedef enum {
     OLED_128x32
 } oled_type_t;
 
+typedef enum {
+    OLED_NORMAL = 0,
+    OLED_UPSIDE_DOWN = 2,
+} oled_rot_t;
 
 class OledLogger : public AlfaBackend {
 public:
-OledLogger(TwoWire& i2c, oled_type_t oled_type, alog_level_t target_level) {
+OledLogger(TwoWire& i2c, alog_level_t target_level,
+    oled_type_t oled_type = OLED_128x64,
+    oled_rot_t oled_rot = OLED_NORMAL
+){
     if (oled_type == OLED_128x64) {
         display = Adafruit_SSD1306(128, 64, &i2c);
         line_count = 8;

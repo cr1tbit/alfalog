@@ -25,7 +25,7 @@ To use this library in your platformio project, add this to `platformio.ini`
 ```
 lib_deps =
     [...]    
-	  https://github.com/cr1tbit/alfalog#v1.0.0
+    https://github.com/cr1tbit/alfalog#v1.0.0
 ```
 
 For the basic serial printing, user must supply their own print handle, which can be as easy as:

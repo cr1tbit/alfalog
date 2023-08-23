@@ -47,11 +47,19 @@ static std::vector<std::string> split_string(const std::string& input_string, in
     return words;
 }
 
+typedef enum {
+    BAR_WIFI_IP,
+    BAR_CUSTOM,
+} top_bar_mode_t;
 
 class AdvancedOledLogger : public AlfaBackend {
 public:
 
-AdvancedOledLogger(TwoWire& i2c, oled_type_t oled_type, alog_level_t target_level) {
+AdvancedOledLogger(
+    TwoWire& i2c, alog_level_t target_level, 
+    oled_type_t oled_type = OLED_128x64,
+    oled_rot_t oled_rot = OLED_NORMAL
+){
     if (oled_type == OLED_128x64) {
         display = Adafruit_SSD1306(128, 64, &i2c);
         line_count = 8;
@@ -60,11 +68,12 @@ AdvancedOledLogger(TwoWire& i2c, oled_type_t oled_type, alog_level_t target_leve
         line_count = 4;
     }
     _level = target_level;
+    this->oled_rot = oled_rot;
 }
 
 void begin() {
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-    display.setRotation(2);
+    display.setRotation(oled_rot);
 
     display.setTextSize(1);
     display.setFont(&Picopixel);
@@ -85,14 +94,18 @@ void render_top_bar(){
     display.setCursor(1, 5);
     display.setTextColor(SSD1306_BLACK);
 
-    std::string text = fmt::format(
-        "{} {:>16}",
-        staticTopBarText.c_str(),
-        (WiFi.status() == WL_CONNECTED)?
-            WiFi.localIP().toString().c_str():
-            "[No internet]"
-    );
-    display.print(text.c_str());
+    if (bar_mode == BAR_WIFI_IP) {
+        std::string text = fmt::format(
+            "{} {:>16}",
+            staticTopBarText.c_str(),
+            (WiFi.status() == WL_CONNECTED)?
+                WiFi.localIP().toString().c_str():
+                "[No internet]"
+        );
+        display.print(text.c_str());
+    } else if (bar_mode == BAR_CUSTOM) {
+        display.print(staticTopBarText.c_str());
+    }    
 }
 
 void render_logs(){
@@ -109,7 +122,8 @@ void render_status_icon(){
     // display.drawBitmap(80, 10, test, 16, 13, 1);
 }
 
-void redraw(){    
+void redraw(){
+    if (!_started) { return; }
     display.clearDisplay();
     
     render_logs();
@@ -144,7 +158,11 @@ void log(alog_level_t level,
     redraw();
 }
 
-std::string staticTopBarText;
+void setTopBarText(top_bar_mode_t mode, const std::string& text){
+    bar_mode = mode;
+    staticTopBarText = text;
+    redraw();
+}
 
 private:
     const int font_height = 6;
@@ -154,5 +172,9 @@ private:
 
     Adafruit_SSD1306 display;
     std::vector<std::string> lines;
+    std::string staticTopBarText;
+
     int line_count;
+    oled_rot_t oled_rot;
+    top_bar_mode_t bar_mode;
 };
