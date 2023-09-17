@@ -130,26 +130,30 @@ void renderStatusIcon(){
     );
     display.print(chars[counter%4]);
     counter++;
-    
-    /* I drew random pixels and this looks like 
-       a croissant, it's pretty funny.
-    uint8_t test[] = {
-        0b00011100,
-        0b01100110,
-        0b10000000,
-        0b11000000,
-        0b11100000,
-        0b11000011,
-        0b11110110,
-        0b00011000,
-    };
-    display.drawBitmap(119, 55, test, 8, 8, 1);
-    */
 }
 
-void redraw(){
+bool shouldDebounce(){
+    static int lastDebounce = 0;
+    static int debounceCount = 0;
+
+    if (millis() - lastDebounce > 100) {
+        if (debounceCount < 4){
+            lastDebounce = millis();
+            debounceCount++;
+            return true;
+        }        
+    }
+    debounceCount = 0;
+    return false;
+}
+
+void redraw(bool forceRedraw = true){
     if (!_started) { return; }
     display.clearDisplay();
+
+    if ((shouldDebounce())&&(forceRedraw == false)){
+        return;
+    }
     
     renderLogs();
     renderTopBar();
@@ -181,13 +185,13 @@ void log(alogLevel_t level,
     }
 
     insertLogLine(logLine);
-    redraw();
+    redraw(false);
 }
 
 void setTopBarText(topBarMode_t mode, const std::string& text){
     barMode = mode;
     staticTopBarText = text;
-    redraw();
+    redraw(true);
 }
 
 private:
