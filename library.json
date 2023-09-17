@@ -1,6 +1,6 @@
 {
     "name": "Alfalog",
-    "version": "1.1.0",
+    "version": "1.1.4",
     "description": "Actually Legitimate Formatted Arduino Logging library",
     "keywords": "log, logging, logger, formatted, hexdump",
     "license": "MIT",
