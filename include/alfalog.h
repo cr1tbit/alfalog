@@ -11,6 +11,10 @@
 #include <alfalogCommon.h>
 #include <alfaBackends.h>
 
+std::vector<byte> alogScanI2C(TwoWire &i2c);
+
+const char* alogGetInitString();
+
 template <> struct fmt::formatter<String> {  
     constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator {
         return ctx.begin();
