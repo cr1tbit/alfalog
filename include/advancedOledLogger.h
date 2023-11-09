@@ -149,9 +149,12 @@ bool shouldDebounce(){
 
 void redraw(bool forceRedraw = true){
     if (!_started) { return; }
+    if (currentlyRerawing) { return; }
+    currentlyRerawing = true;
     display.clearDisplay();
 
     if ((shouldDebounce())&&(forceRedraw == false)){
+        currentlyRerawing = false;
         return;
     }
     
@@ -160,6 +163,7 @@ void redraw(bool forceRedraw = true){
     renderStatusIcon();
 
     display.display();
+    currentlyRerawing = false;
 }
 
 void log(alogLevel_t level, 
@@ -207,4 +211,5 @@ private:
     int lineCount;
     oledRot_t oledRot;
     topBarMode_t barMode;
+    bool currentlyRerawing = false;
 };
