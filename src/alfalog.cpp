@@ -13,7 +13,7 @@ std::vector<byte> alogScanI2C(TwoWire &i2c){
   return ret;
 }
 
-const char* alogGetInitString(){
+const char* alogGetInitString(int line){
     // a lot of macro preprocessing so that it does no
     // string concatenation at runtime
 
@@ -29,9 +29,17 @@ const char* alogGetInitString(){
         #define PRINT_FW_REV " "
     #endif
 
-    return
-    PROJECT_NAME PRINT_FW_REV "\n\r"
-    "Compiled " __DATE__ " " __TIME__;
+    if (line == 0){
+        return
+            PROJECT_NAME PRINT_FW_REV "\r\n"
+            "Compiled " __DATE__ " " __TIME__;
+    } else if (line == 1){
+        return PROJECT_NAME PRINT_FW_REV;
+    } else if (line == 2){
+        return "Compiled " __DATE__ " " __TIME__;
+    } else {
+        return "";
+    }    
 }
 
 

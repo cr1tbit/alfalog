@@ -4,14 +4,19 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-const std::string red("\033[0;31m");
-const std::string green("\033[1;32m");
-const std::string yellow("\033[1;33m");
-const std::string cyan("\033[0;36m");
-const std::string magenta("\033[0;35m");
-const std::string reset("\033[0m");
+const std::string alogColorRed("\033[0;31m");
+const std::string alogColorGreen("\033[1;32m");
+const std::string alogColorYellow("\033[1;33m");
+const std::string alogColorCyan("\033[0;36m");
+const std::string alogColorMagenta("\033[0;35m");
+const std::string alogColorGrey("\033[0;37m");
+const std::string alogColorReset("\033[0m");
 
 #define ALOG_FANCY true
+#define ALOG_BASIC true
+
+#define ALOG_FILELINE true
+#define ALOG_NOFILELINE false
 
 class AlfaBackend {
     public:
@@ -47,17 +52,17 @@ class AlfaBackend {
     const std::string getFancyPrefix(alogLevel_t level) {
         switch (level) {
             case LOG_TRACE:
-                return std::string(cyan + "TRC: " + reset);
+                return std::string(alogColorCyan    + "TRC: " + alogColorReset);
             case LOG_DEBUG:
-                return std::string(green + "DBG: " + reset);
+                return std::string(alogColorGreen   + "DBG: " + alogColorReset);
             case LOG_INFO:
-                return std::string(magenta + "INF: " + reset);
+                return std::string(alogColorMagenta + "INF: " + alogColorReset);
             case LOG_WARN:
-                return std::string(yellow + "WRN: " + reset);
+                return std::string(alogColorYellow  + "WRN: " + alogColorReset);
             case LOG_ERROR:
-                return std::string(red + "ERR: " + reset);
+                return std::string(alogColorRed     + "ERR: " + alogColorReset);
             case LOG_VIP:
-                return std::string(cyan + "VIP: " + reset);
+                return std::string(alogColorCyan    + "VIP: " + alogColorReset);
             case LOG_RAW:
                 return std::string("");
             default:
@@ -138,15 +143,21 @@ private:
     int lineCount;
 };
 
-
 class SerialLogger : public AlfaBackend {
 public:
 
-SerialLogger(std::function<void(const char*)> alogPrintHandle, alogLevel_t targetLevel, bool isFancy = false){
+SerialLogger(
+    std::function<void(const char*)> alogPrintHandle,
+    alogLevel_t targetLevel,
+    bool isFancy = false,
+    bool printFileLine = true
+){
     this->_ser_handle = alogPrintHandle;
     _level = targetLevel;
     _fancy = isFancy;
+    _printFileLine = printFileLine;
 }
+
 void begin() {
     _started = true;
 }
@@ -162,8 +173,12 @@ void log(alogLevel_t level,
 
     std::string fileLine = "";
 
-    if ((_printFileLine) && (line != 0)) {
-        fileLine += fmt::format("{}:{} ",file, line);
+    if ((_printFileLine) && (line > 0)) {
+        if (_fancy) {
+            fileLine += fmt::format("{}{}:{}{} ",alogColorGrey, file, line, alogColorReset);
+        } else {
+            fileLine += fmt::format("{}:{} ",file, line);
+        }
     }
 
     std::string logString = fmt::format(

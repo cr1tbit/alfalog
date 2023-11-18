@@ -13,7 +13,7 @@
 
 std::vector<byte> alogScanI2C(TwoWire &i2c);
 
-const char* alogGetInitString();
+const char* alogGetInitString(int line = 0);
 
 template <> struct fmt::formatter<String> {  
     constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator {
